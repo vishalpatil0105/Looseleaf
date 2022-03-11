@@ -18,6 +18,7 @@ def format_response(data, status=200):
     return context
 
 
+# Create student
 class CreateStudent(APIView):
     def post(self, request):
         try:
@@ -58,6 +59,7 @@ class CreateStudent(APIView):
                             status=status.HTTP_400_BAD_REQUEST)
 
 
+# Edit student
 class EditStudent(APIView):
     def put(self, request):
         try:
@@ -101,6 +103,7 @@ class EditStudent(APIView):
                             status=status.HTTP_400_BAD_REQUEST)
 
 
+# Delete student
 class DeleteStudent(APIView):
     def delete(self,request):
         try:
@@ -137,6 +140,7 @@ class DeleteStudent(APIView):
                             status=status.HTTP_400_BAD_REQUEST)
 
 
+# View all students
 class SeeAllStudents(APIView):
     def get(self,request):
         try:
@@ -152,6 +156,7 @@ class SeeAllStudents(APIView):
                         status=status.HTTP_400_BAD_REQUEST)
 
 
+# Create course
 class CreateCourses(APIView):
     def post(self,request):
         try:
@@ -212,6 +217,7 @@ class CreateCourses(APIView):
                             status=status.HTTP_400_BAD_REQUEST)
 
 
+# Edit course
 class EditCourse(APIView):
     def put(self,request):
         try:
@@ -248,6 +254,7 @@ class EditCourse(APIView):
                             status=status.HTTP_400_BAD_REQUEST)
 
 
+# View all courses
 class SeeAllCourses(APIView):
     def get(self,request):
         try:
@@ -263,36 +270,32 @@ class SeeAllCourses(APIView):
                             status=status.HTTP_400_BAD_REQUEST)
 
 
+# Delete course
 class DeleteCourse(APIView):
     def delete(self,request):
         try:
             data = QueryDict.dict(request.data)
             id = data.get('id', None)
-            if id:
-                id_ = Courses.objects.filter(id=id)
-                if id_:
-                    id_.delete()
-                    return Response(
-                        format_response(
-                            {'message': f"Course with given id is deleted successfully"}, 200),
-                        status=status.HTTP_200_OK)
-                else:
-                    return Response(
-                        format_response(
-                            {'message': f"Course with given id is deleted successfully"}, 400),
-                           status=status.HTTP_400_BAD_REQUEST)
+            if Courses.objects.filter(id=id).exists():
+                id_ = Courses.objects.get(id=id)
+                id_.delete()
+                return Response(
+                    format_response(
+                        {'message': f"Course with given id is deleted successfully"}, 200),
+                    status=status.HTTP_200_OK)
             else:
                 return Response(
                     format_response(
-                        {'message': f"Course with given id is deleted successfully"}, 400),
+                        {'message': f"Request Body is empty"}, 400),
                     status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response(
                 format_response(
-                    {'message': f"Course with given id is deleted successfully"}, 400),
+                    {'message': f"Error {e}"}, 400),
                 status=status.HTTP_400_BAD_REQUEST)
 
 
+# Assign non-compulsory course to a particular student
 class NonCompulsoryToStudent(APIView):
     def post(self,request):
         try:
@@ -332,6 +335,7 @@ class NonCompulsoryToStudent(APIView):
                 status=status.HTTP_400_BAD_REQUEST)
 
 
+# View courses of a particular student
 class StudentCourseInfo(APIView):
     def post(self,request):
         try:
@@ -339,6 +343,7 @@ class StudentCourseInfo(APIView):
             student_id = data.get('student_id')
             if Students.objects.filter(id=student_id).exists():
                 student_data = Courses.objects.filter(student_id=student_id)
+                # student_data = Courses.objects.filter(course_name="Bio")
                 serialized_var = CoursesSerializers(student_data, many=True).data
                 context = {
                     'message': 'Courses fetched successfully',
